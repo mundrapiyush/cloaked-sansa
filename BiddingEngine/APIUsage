@@ -1,0 +1,32 @@
+Add New User:
+------------
+PUT@URL: http://localhost:8080/BiddingEngine/engine/users
+Content-Type: application/json, Accept: application/json
+Request Body: {"UserName":"testUser","UserID":"testUID"}
+Response Body: {"UserURL":"http:\/\/localhost:8080\/BiddingEngine\/engine\/users\/testUID"}
+
+Add New Item:
+-------------
+PUT@URL: http://localhost:8080/BiddingEngine/engine/items
+Content-Type: application/json, Accept: application/json
+Request Body: {"name":"testItem","description":"test Description","startPrice":"10.0", "sellerUID":"testUID"}
+Response Body: {"itemID":"7d22e29b-d6ee-499e-9482-f88fd7092345","itemURL":"http:\/\/localhost:8080\/BiddingEngine\/engine\/items\/7d22e29b-d6ee-499e-9482-f88fd7092345"}
+
+List Items:
+-----------
+GET@URL: http://localhost:8080/BiddingEngine/engine/items
+Accept: application/json
+Response Body: {"items":[{"itemID":"7d22e29b-d6ee-499e-9482-f88fd7092345","name":"testItem","description":"test Description","startPrice":10,"creationTime":1456137717879,"sellerUID":"testUID","active":true}]}
+
+Add New Bid:
+------------
+PUT@URL: http://localhost:8080/BiddingEngine/engine/items/7d22e29b-d6ee-499e-9482-f88fd7092345/bids
+Content-Type: application/json, Accept: application/json
+Request Body: {"BidderUID":"testUID","BidPrice":"11.0"}
+Response Body: {"bidID":"eeb62803-4d38-4488-b83d-e0b83992732c","bidderUID":"testUID","bidPrice":11.0}
+
+List Top 5 Bids:
+----------------
+GET@URL: http://localhost:8080/BiddingEngine/engine/items/7d22e29b-d6ee-499e-9482-f88fd7092345/bids
+Accept: application/json
+Response Body: {"bids":[{"bidID":"eeb62803-4d38-4488-b83d-e0b83992732c","bidderUID":"testUID","bidPrice":11}]}
