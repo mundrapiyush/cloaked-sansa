@@ -39,8 +39,8 @@ public class UserServiceEndPoint {
 		User user = userService.getUser(userID);
 		if(user != null){
 			JSONObject object = new JSONObject();
-			object.put("UserID", user.getUserID());
-			object.put("UserName", user.getName());
+			object.put("userID", user.getUserID());
+			object.put("userName", user.getName());
 			builder.entity(object);
 			builder.status(Response.Status.OK);
 		}
@@ -56,13 +56,13 @@ public class UserServiceEndPoint {
 							@Context UriInfo urlInfo) throws JSONException{
 		ResponseBuilder builder = new ResponseBuilderImpl();
 		
-		String userID = request.getString("UserID");
-		String userName = request.getString("UserName");
+		String userID = request.getString("userID");
+		String userName = request.getString("userName");
 		
 		userService.registerUser(userID, userName);
 		
 		JSONObject object = new JSONObject();
-		object.put("UserURL", urlInfo.getRequestUri() + "/" + userID);
+		object.put("userURL", urlInfo.getRequestUri() + "/" + userID);
 		
 		builder.entity(object);
 		builder.status(Response.Status.OK);

@@ -162,8 +162,8 @@ public class ItemServiceEndPoint {
 		float bidValue;
 		
 		try {
-			bidderUID = bid.getString("BidderUID");
-			bidValue = new Float(bid.getString("BidPrice")).floatValue();
+			bidderUID = bid.getString("bidderUID");
+			bidValue = new Float(bid.getString("bidPrice")).floatValue();
 		} catch (JSONException e) {
 			response.entity(e.getMessage());
 			response.status(Response.Status.BAD_REQUEST);
