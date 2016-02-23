@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -13,18 +12,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.biddingengine.datamodel.Item;
-import org.biddingengine.exceptions.BidExpiredException;
-import org.biddingengine.exceptions.BidInvalidException;
-import org.biddingengine.exceptions.ItemNotFoundException;
-import org.biddingengine.exceptions.UserNotFoundException;
-import org.biddingengine.test.BiddingEngineTest.Bidder;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.junit.Test;
 
 public class BiddingEngineHttpClientTest {
 
@@ -48,10 +42,10 @@ public class BiddingEngineHttpClientTest {
 		
 		System.out.println("Adding Bidders");
 		for(int bidderCount = 0; bidderCount < TEST_BIDDER_COUNT; bidderCount++){
-			String bidderUID = "sampleBidder" + bidderCount;
+			String bidderUID = "sampleBidder" + bidderCount;	
 			String bidderName = "Sample Bidder " + bidderCount;
 			testObject.bidderIDArray.add(bidderUID);
-			System.out.println("Status Code: " +testObject.addUser(bidderUID, bidderName));
+			System.out.println("Adding Bidder: " + bidderUID + " Status Code: " +testObject.addUser(bidderUID, bidderName));
 		}
 		
 		System.out.println("Adding Items");
@@ -59,6 +53,7 @@ public class BiddingEngineHttpClientTest {
 			String itemName = "Item" + itemCount;
 			String itemID = testObject.addItem(itemName);
 			testObject.itemIDArray.add(itemID);
+			System.out.println("Adding Item: " + itemName + " Item ID: " +itemID);
 		}
 		
 		System.out.println("Start Bidding");
@@ -70,10 +65,10 @@ public class BiddingEngineHttpClientTest {
 		HttpClient client = HttpClientBuilder.create().build();
 		HttpResponse response;
 		
-		JSONObject sellerJSON = new JSONObject();
+		JSONObject userJSON = new JSONObject();
 		try {
-			sellerJSON.put("userID", "sampleSeller");
-			sellerJSON.put("userName", "Sample Seller");
+			userJSON.put("userID", userID);
+			userJSON.put("userName", userName);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -84,7 +79,7 @@ public class BiddingEngineHttpClientTest {
 		putUser.addHeader("Accept", "application/json");
 		StringEntity input;
 		try {
-			input = new StringEntity(sellerJSON.toString());
+			input = new StringEntity(userJSON.toString());
 			putUser.setEntity(input);
 			response = client.execute(putUser);
 			return response.getStatusLine().getStatusCode();
@@ -154,8 +149,37 @@ public class BiddingEngineHttpClientTest {
 			putUser.setEntity(input);
 			response = client.execute(putUser);
 			responseBody = readFromStream(response.getEntity().getContent());
+			JSONObject responseJSON;
+			try {
+				responseJSON = new JSONObject(responseBody);
+				itemID = responseJSON.getString("itemID");
+			} catch (JSONException e) {
+				System.out.println(responseBody);
+			}			
+		} catch (IOException e) {}
+	}
+	
+	public void getResults(){
+
+		HttpClient client = HttpClientBuilder.create().build();
+		HttpResponse response;
+		String responseBody;
+		
+		HttpGet getItem = new HttpGet(putItemUrl);
+		getItem.addHeader("Content-Type", "application/json");
+		getItem.addHeader("Accept", "application/json");
+		try {
+			response = client.execute(getItem);
+			responseBody = readFromStream(response.getEntity().getContent());
 			JSONObject responseJSON = new JSONObject(responseBody);
-			itemID = responseJSON.getString("itemID");
+			JSONArray responseArray = responseJSON.getJSONArray("items");
+			for(int itemCount = 0; itemCount < responseArray.length(); itemCount++){
+				JSONObject thisItem = responseArray.getJSONObject(itemCount);
+				String itemName = thisItem.getString("name");
+				String buyerID = thisItem.getString("buyerID");
+				String soldPrice = thisItem.getString("soldPrice");
+				System.out.println("Item :" +itemName+ " sold to: " +buyerID+ " at Price: " +soldPrice);
+			}
 			
 		} catch (IOException | JSONException e) {
 			// TODO Auto-generated catch block
@@ -188,6 +212,7 @@ public class BiddingEngineHttpClientTest {
 		} catch (InterruptedException e) {
 			System.out.println(e.getMessage());
 		}
+		getResults();
 		System.exit(0);
 	}
 	
@@ -217,6 +242,7 @@ public class BiddingEngineHttpClientTest {
 				// Register our bid and take a nap of 1 micro second
 				try {
 					addBid(itemID, bidderID, newPrice);
+					System.out.println("Placing Bid for :" +itemID+ " from Bidder: " +bidderID+ " with Bid Value: " +newPrice);
 					Thread.sleep(1);
 				} catch (InterruptedException e) {
 					
