@@ -30,6 +30,12 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+
+/**
+ * Item and Bid related rest operations
+ * @author piyush
+ *
+ */
 @Path("/items")
 public class ItemServiceEndPoint {
 

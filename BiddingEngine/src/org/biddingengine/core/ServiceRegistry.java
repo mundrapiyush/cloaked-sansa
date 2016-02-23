@@ -6,6 +6,15 @@ import org.biddingengine.datamodel.Item;
 import org.biddingengine.datamodel.ServiceType;
 import org.biddingengine.datamodel.User;
 
+/**
+ * Singleton registry in which all the services are
+ * placed. 
+ * BidService - to perform all the bid for items
+ * ItemService - to perform adding and removal of items
+ * Userservice - to perform adding and removal of users (bidders/sellers)
+ * @author piyush
+ *
+ */
 public class ServiceRegistry {
 	private static ConcurrentHashMap<ServiceType, Object> registry = new ConcurrentHashMap<>();
 	

@@ -1,5 +1,10 @@
 package org.biddingengine.web;
 
+/**
+ * User related rest operations
+ * @author piyush
+ *
+ */
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -9,7 +14,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.StatusType;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.cxf.jaxrs.impl.ResponseBuilderImpl;

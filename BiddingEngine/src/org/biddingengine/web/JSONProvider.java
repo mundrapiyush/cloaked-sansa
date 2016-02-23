@@ -2,7 +2,6 @@ package org.biddingengine.web;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,6 +21,12 @@ import javax.ws.rs.ext.Provider;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+
+/**
+ * Provider class to serialize and deserialize JSON 
+ * @author piyush
+ *
+ */
 @Provider
 @Produces("application/json")
 @Consumes("application/json")

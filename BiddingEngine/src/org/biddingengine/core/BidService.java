@@ -17,6 +17,12 @@ import org.biddingengine.exceptions.BidInvalidException;
 import org.biddingengine.exceptions.ItemNotFoundException;
 import org.biddingengine.exceptions.UserNotFoundException;
 
+/**
+ * Service to perform Bidding over a given item.
+ * Placing of the bid for an item is handled by a seperate thread from the thread pool
+ * @author piyush
+ *
+ */
 public class BidService {
 
 	private final ConcurrentHashMap<String, Item> itemMap;
@@ -31,6 +37,17 @@ public class BidService {
 		executorService= Executors.newFixedThreadPool(Configuration.BID_THREAD_POOL_SIZE);
 	}
 	
+	/**
+	 * 
+	 * @param itemID Item for which the bid is to be placed
+	 * @param bidderUID UserId of the bidder which placed the bid
+	 * @param bidValue Value of the bid
+	 * @return Bid object representing the newly placed bid
+	 * @throws BidInvalidException
+	 * @throws UserNotFoundException
+	 * @throws ItemNotFoundException
+	 * @throws BidExpiredException
+	 */
 	public Bid registerBid(String itemID, String bidderUID, float bidValue) throws BidInvalidException, 
 																				   UserNotFoundException, 
 																				   ItemNotFoundException,
@@ -67,6 +84,13 @@ public class BidService {
 		return false;
 	}
 
+	/**
+	 * 
+	 * @param itemID Item ID for which the top bid listing is to be acquired
+	 * @param listSize
+	 * @return
+	 * @throws ItemNotFoundException
+	 */
 	public List<Bid> listBids(String itemID, int listSize) throws ItemNotFoundException {
 		Item item = itemMap.get(itemID);
 		List<Bid> retList = new ArrayList<>();

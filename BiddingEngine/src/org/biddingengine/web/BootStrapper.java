@@ -7,6 +7,15 @@ import javax.ws.rs.core.Application;
 
 import org.biddingengine.core.ServiceRegistry;
 
+
+/**
+ * All the REST Service Endpoints are placed here.
+ * There are two endpoints created here.
+ * UserServiceEndPoint - To perform all the user related rest operations
+ * ItemServiceEndPoint - To perform all the item and bids related rest opoerations
+ * @author piyush
+ *
+ */
 public class BootStrapper extends Application{
 	
 	public BootStrapper() {

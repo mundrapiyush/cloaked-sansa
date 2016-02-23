@@ -17,6 +17,15 @@ import org.biddingengine.datamodel.Item;
 import org.biddingengine.exceptions.ItemNotFoundException;
 import org.biddingengine.exceptions.UserNotFoundException;
 
+/**
+ * Service to perform addition and removal of items for bidding
+ * During initialization the service starts a batch processor 
+ * that runs at scheduled intervals, iterates over the item map
+ * and makes the items inactive for bids incase current time 
+ * exceeds the bid interval for that particular object. 
+ * @author piyush
+ *
+ */
 public class ItemService {
 
 	private final ConcurrentHashMap<String, Item> itemMap;
@@ -31,6 +40,17 @@ public class ItemService {
 		itemBatchProcessor.scheduleAtFixedRate(processor, 0, Configuration.ITEM_MAP_SCAN_INTERVAL, TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * 
+	 * @param name Name of the item
+	 * @param description Description of the item
+	 * @param startPrice Start Price of the item. Price at which the bidding starts
+	 * @param creationTime Time when the item is placed for bidding by bidders
+	 * @param sellerUID UserId of the seller who placed the item for bidding
+	 * @param isActive boolean flag to indicate if the item is open for bidding or not
+	 * @return String UUID of the item
+	 * @throws UserNotFoundException
+	 */
 	public String advertizeItem(String name, String description, 
 								double startPrice, long creationTime,
 								String sellerUID, boolean isActive) throws UserNotFoundException {
@@ -64,6 +84,10 @@ public class ItemService {
 		}
 	}
 	
+	/**
+	 * 
+	 * @return List of all the Item objects 
+	 */
 	public List<Item> getItems(){
 
 		Set<Entry<String, Item>> entries = itemMap.entrySet();
@@ -79,6 +103,12 @@ public class ItemService {
 		return retList;
 	}
 	
+	/**
+	 * 
+	 * @param itemID ID of the item to be searched 
+	 * @return Item object representing the object
+	 * @throws ItemNotFoundException
+	 */
 	public Item getItem(String itemID) throws ItemNotFoundException{
 
 		Item item = itemMap.get(itemID);
