@@ -10,7 +10,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.biddingengine.datamodel.Bid;
+import org.biddingengine.datamodel.Configuration;
 import org.biddingengine.datamodel.Item;
+import org.biddingengine.exceptions.BidExpiredException;
 import org.biddingengine.exceptions.BidInvalidException;
 import org.biddingengine.exceptions.ItemNotFoundException;
 import org.biddingengine.exceptions.UserNotFoundException;
@@ -26,13 +28,13 @@ public class BidService {
 		this.itemMap = itemMap;
 		this.userService = userService;
 		totalBidCount = new AtomicLong();
-		executorService= Executors.newCachedThreadPool();
+		executorService= Executors.newFixedThreadPool(Configuration.BID_THREAD_POOL_SIZE);
 	}
 	
 	public Bid registerBid(String itemID, String bidderUID, float bidValue) throws BidInvalidException, 
 																				   UserNotFoundException, 
-																				   ItemNotFoundException {
-
+																				   ItemNotFoundException,
+																				   BidExpiredException {
 		Item item = itemMap.get(itemID);
 	
 		if(item != null){
@@ -40,15 +42,20 @@ public class BidService {
 			if(bidValue <= item.getStartPrice()){
 				throw new BidInvalidException(bidValue);
 			}
-			
-			if(userService.isRegistered(bidderUID)){
-				Bid newBid = new Bid(bidderUID, bidValue, true);
-				BidsProcessor executor = new BidsProcessor(item, newBid);
-				executorService.execute(executor);
-				return newBid;
+
+			if(item.isActive()){
+				if(userService.isRegistered(bidderUID)){
+					Bid newBid = new Bid(bidderUID, bidValue, true);
+					BidsProcessor executor = new BidsProcessor(item, newBid);
+					executorService.execute(executor);
+					return newBid;
+				}
+				else{
+					throw new UserNotFoundException();
+				}
 			}
 			else{
-				throw new UserNotFoundException();
+				throw new BidExpiredException();
 			}
 		}
 		else{

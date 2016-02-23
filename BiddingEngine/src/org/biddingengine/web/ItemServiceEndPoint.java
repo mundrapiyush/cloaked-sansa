@@ -21,6 +21,7 @@ import org.biddingengine.core.ServiceRegistry;
 import org.biddingengine.datamodel.Bid;
 import org.biddingengine.datamodel.Item;
 import org.biddingengine.datamodel.ServiceType;
+import org.biddingengine.exceptions.BidExpiredException;
 import org.biddingengine.exceptions.BidInvalidException;
 import org.biddingengine.exceptions.ItemNotFoundException;
 import org.biddingengine.exceptions.UserNotFoundException;
@@ -175,7 +176,7 @@ public class ItemServiceEndPoint {
 			String jsonObject = mapper.writeValueAsString(newBid);
 			response.entity(jsonObject);
 			response.status(Response.Status.OK);
-		} catch (IOException | BidInvalidException | UserNotFoundException | ItemNotFoundException e) {
+		} catch (IOException | BidInvalidException | UserNotFoundException | ItemNotFoundException | BidExpiredException e) {
 			response.entity(e.getMessage());
 			response.status(Response.Status.INTERNAL_SERVER_ERROR);
 		}

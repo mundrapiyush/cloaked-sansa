@@ -12,6 +12,7 @@ import org.biddingengine.core.ServiceRegistry;
 import org.biddingengine.core.UserService;
 import org.biddingengine.datamodel.Item;
 import org.biddingengine.datamodel.ServiceType;
+import org.biddingengine.exceptions.BidExpiredException;
 import org.biddingengine.exceptions.BidInvalidException;
 import org.biddingengine.exceptions.ItemNotFoundException;
 import org.biddingengine.exceptions.UserNotFoundException;
@@ -20,7 +21,7 @@ import org.junit.Test;
 
 public class BiddingEngineTest {
 
-	ServiceRegistry serviceRegistry = new ServiceRegistry();
+	ServiceRegistry serviceRegistry;
 	
 	UserService userService;
 	ItemService itemService;
@@ -30,7 +31,7 @@ public class BiddingEngineTest {
 	
 	public static final int TEST_DURATION = 60;
 	public static final int TEST_ITEM_COUNT = 100;
-	public static final int TEST_BIDDER_COUNT = 50;
+	public static final int TEST_BIDDER_COUNT = 100;
 	
 	ArrayList<String> itemIDArray = new ArrayList<>();
 	ArrayList<String> bidderIDArray = new ArrayList<>();
@@ -107,6 +108,7 @@ public class BiddingEngineTest {
 							   " Buyer Name: " + item.getBuyerID()+
 							   " SoldPrice: " + item.getSoldPrice());
 		}
+		System.exit(0);
 	}
 	
 	public class Bidder implements Runnable{
@@ -136,9 +138,8 @@ public class BiddingEngineTest {
 				try {
 					bidService.registerBid(itemID, bidderID, newPrice);
 					Thread.sleep(1);
-				} catch (InterruptedException | BidInvalidException | UserNotFoundException | ItemNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (InterruptedException | BidInvalidException | UserNotFoundException | ItemNotFoundException | BidExpiredException e) {
+					
 				}
 			}
 		}		

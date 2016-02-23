@@ -22,8 +22,8 @@ public class ItemsProcessor implements Runnable {
 		Set<Entry<String,Item>> keys = itemMap.entrySet();
 		Iterator<Entry<String,Item>> iter = keys.iterator();
 		while(iter.hasNext()){
-			Item item = itemMap.get(iter.next());
-			if(System.currentTimeMillis() > item.getCreationTime() + (Configuration.BID_EXPIRY_INTERVAL * 1000)){
+			Item item = iter.next().getValue();
+			if(System.currentTimeMillis() >= (item.getCreationTime() + Configuration.BID_EXPIRY_INTERVAL)){
 				synchronized (item) {
 					System.out.println("Item with ID: " +item.getSellerUID() + " expired.");
 					item.setActive(false);
