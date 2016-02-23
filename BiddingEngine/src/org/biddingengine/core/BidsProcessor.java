@@ -28,8 +28,15 @@ public class BidsProcessor implements Runnable {
 			if(item.isActive()){
 				System.out.println("Bid Received from: " +bid.getBidderUID()+ " with value: " +bid.getBidPrice());
 				item.getBidList().add(bid);
-				if(System.currentTimeMillis() >= item.getCreationTime() + (Configuration.BID_EXPIRY_INTERVAL * 1000))
+				if(System.currentTimeMillis() >= item.getCreationTime() + (Configuration.BID_EXPIRY_INTERVAL * 1000)){
+					System.out.println("Item with ID: " +item.getSellerUID() + " expired.");
 					item.setActive(false);
+					if(!item.getBidList().isEmpty()){
+						Bid winnerBid = item.getBidList().first();
+						item.setBuyerID(winnerBid.getBidderUID());
+						item.setSoldPrice(winnerBid.getBidPrice());
+					}				
+				}
 			}
 			else{
 				System.out.println("Bid Received for an expired item. ");

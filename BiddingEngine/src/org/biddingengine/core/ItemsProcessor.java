@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.biddingengine.datamodel.Bid;
 import org.biddingengine.datamodel.Configuration;
 import org.biddingengine.datamodel.Item;
 
@@ -26,6 +27,11 @@ public class ItemsProcessor implements Runnable {
 				synchronized (item) {
 					System.out.println("Item with ID: " +item.getSellerUID() + " expired.");
 					item.setActive(false);
+					if(!item.getBidList().isEmpty()){
+						Bid winnerBid = item.getBidList().first();
+						item.setBuyerID(winnerBid.getBidderUID());
+						item.setSoldPrice(winnerBid.getBidPrice());
+					}
 				}
 			}
 		}

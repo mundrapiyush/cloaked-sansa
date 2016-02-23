@@ -133,5 +133,18 @@ public class BiddingEngineImpl implements IBiddingEngine {
 	
 	public Map getBidMap(){
 		return bidMap;
+		/*
+		Bidder bidder1 = new Bidder(itemID, bidderID1);
+		Bidder bidder2 = new Bidder(itemID, bidderID2);
+		Bidder bidder3 = new Bidder(itemID, bidderID3);
+		Bidder bidder4 = new Bidder(itemID, bidderID4);
+		Bidder bidder5 = new Bidder(itemID, bidderID5);
+		
+		executor.execute(bidder1);
+		executor.execute(bidder2);
+		executor.execute(bidder3);
+		executor.execute(bidder4);
+		executor.execute(bidder5);
+		*/
 	}
 }

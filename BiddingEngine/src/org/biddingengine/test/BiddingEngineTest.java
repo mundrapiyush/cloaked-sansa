@@ -1,5 +1,6 @@
 package org.biddingengine.test;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -9,6 +10,7 @@ import org.biddingengine.core.BidService;
 import org.biddingengine.core.ItemService;
 import org.biddingengine.core.ServiceRegistry;
 import org.biddingengine.core.UserService;
+import org.biddingengine.datamodel.Item;
 import org.biddingengine.datamodel.ServiceType;
 import org.biddingengine.exceptions.BidInvalidException;
 import org.biddingengine.exceptions.ItemNotFoundException;
@@ -24,81 +26,95 @@ public class BiddingEngineTest {
 	ItemService itemService;
 	BidService bidService;
 	
-	String sellerID;
-	String bidderID1;
-	String bidderID2;
-	String bidderID3;
-	String bidderID4;	
-	String bidderID5;
-	
-	String itemID;
 	int basePrice = 10;
+	
 	public static final int TEST_DURATION = 60;
-
+	public static final int TEST_ITEM_COUNT = 100;
+	public static final int TEST_BIDDER_COUNT = 50;
+	
+	ArrayList<String> itemIDArray = new ArrayList<>();
+	ArrayList<String> bidderIDArray = new ArrayList<>();
 	
 	public static void main(String [] args){
 		BiddingEngineTest tester = new BiddingEngineTest();
 		tester.initTest();
-		tester.testSingleBidder();
+		tester.testFixedNumberBidders();
 	}
 	
 	@Before
 	public void initTest(){
 		
+		// Initializing System
 		serviceRegistry = new ServiceRegistry();
 		
-		userService = (UserService)serviceRegistry.getService(ServiceType.USER_SERVICE);
-		itemService = (ItemService)serviceRegistry.getService(ServiceType.ITEM_SERVICE);
-		bidService = (BidService)serviceRegistry.getService(ServiceType.BID_SERVICE);
+		userService = (UserService)ServiceRegistry.getService(ServiceType.USER_SERVICE);
+		itemService = (ItemService)ServiceRegistry.getService(ServiceType.ITEM_SERVICE);
+		bidService = (BidService)ServiceRegistry.getService(ServiceType.BID_SERVICE);
 		
-		sellerID = userService.registerUser("sampleSeller", "Sample Seller");
-		bidderID1 = userService.registerUser("sampleBidder1", "Sample Bidder 1");
-		bidderID2 = userService.registerUser("sampleBidder2", "Sample Bidder 2");
-		bidderID3 = userService.registerUser("sampleBidder3", "Sample Bidder 3");
-		bidderID4 = userService.registerUser("sampleBidder4", "Sample Bidder 4");
-		bidderID5 = userService.registerUser("sampleBidder5", "Sample Bidder 5");
+		// Creating seller
+		String sellerID = userService.registerUser("sampleSeller", "Sample Seller");
+		
+		// Advertising items (no of items is governed by TEST_ITEM_COUNT variable
+		// The itemIDs generated are then maintained in an ArrayList
+		long currTime = System.currentTimeMillis();
+		String itemID = null;
+		
+		for(int itemCount = 0; itemCount < TEST_ITEM_COUNT; itemCount++){
+			String itemName = "Item" + itemCount;
+			try {
+				itemID = itemService.advertizeItem(itemName, itemName, basePrice, currTime,  sellerID, true);
+				itemIDArray.add(itemID);
+			} catch (UserNotFoundException e1) {
+				System.out.println(e1.getMessage());
+			}
+		}
+		
+		// Creating Bidders
+		// The biddeIDs generated are then maintained in an ArrayList 
+		for(int bidderCount = 0; bidderCount < TEST_BIDDER_COUNT; bidderCount++){
+			String bidderUID = "sampleBidder" + bidderCount;
+			String bidderName = "Sample Bidder " + bidderCount;
+			String bidderID = userService.registerUser(bidderUID, bidderName);
+			bidderIDArray.add(bidderID);
+		}
 	}
 	
 	@Test
-	public void testSingleBidder() {
+	public void testFixedNumberBidders() {
 		
-		long currTime = System.currentTimeMillis();
-		String itemID = null;
-		try {
-			itemID = itemService.advertizeItem("Item1", "Item1", basePrice, currTime,  sellerID, true);
-		} catch (UserNotFoundException e1) {
-			System.out.println(e1.getMessage());
+		// Starting workers that simulate bidders
+		ExecutorService executor = Executors.newFixedThreadPool(100);
+		for(int bidderIdx = 0; bidderIdx < TEST_BIDDER_COUNT; bidderIdx++){
+			Bidder bidder = new Bidder(bidderIDArray.get(bidderIdx));
+			executor.execute(bidder);
 		}
-		
-		Bidder bidder1 = new Bidder(itemID, bidderID1);
-		Bidder bidder2 = new Bidder(itemID, bidderID2);
-		Bidder bidder3 = new Bidder(itemID, bidderID3);
-		Bidder bidder4 = new Bidder(itemID, bidderID4);
-		Bidder bidder5 = new Bidder(itemID, bidderID5);
-		
-		ExecutorService executor = Executors.newFixedThreadPool(10);
-		executor.execute(bidder1);
-		executor.execute(bidder2);
-		executor.execute(bidder3);
-		executor.execute(bidder4);
-		executor.execute(bidder5);
 
+		// Let them fight for TEST_DURATION
 		try {
 			executor.awaitTermination(TEST_DURATION, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			System.out.println(e.getMessage());
 		}
-		System.out.println("Finished Test.");
+		
+		System.out.println("Finished Test. Summary:");
+		System.out.println("-----------------------");
+		System.out.println("Processed Bids: " +bidService.getTotalBidCount());
+		System.out.println("Time Executed (seconds): " + TEST_DURATION);
+		System.out.println("-----------------------");
+		for(Item item : itemService.getItems()){
+			System.out.println(" Item Name: " + item.getName()+
+							   " StartPrice: " + item.getStartPrice()+
+							   " Buyer Name: " + item.getBuyerID()+
+							   " SoldPrice: " + item.getSoldPrice());
+		}
 	}
 	
 	public class Bidder implements Runnable{
 		
-		String itemID;
 		String bidderID;
 		long startTime;
 		
-		public Bidder(String itemID, String bidderID){
-			this.itemID = itemID; 
+		public Bidder(String bidderID){
 			this.bidderID = bidderID;
 			startTime = System.currentTimeMillis();
 		}
@@ -107,8 +123,16 @@ public class BiddingEngineTest {
 		public void run() {
 			while(System.currentTimeMillis() < (startTime + (TEST_DURATION * 1000))){
 				Random random = new Random();
+				
+				// Lets see which item we want to bid next
+				// Generate a new index for the itemIDArray
+				int itemIdx = random.nextInt(TEST_ITEM_COUNT);
+				String itemID = itemIDArray.get(itemIdx);
+				
+				// Generate a new bid with value taking ceiling of 100
 				int newPrice = basePrice + 1 + random.nextInt(100);
 				
+				// Register our bid and take a nap of 1 micro second
 				try {
 					bidService.registerBid(itemID, bidderID, newPrice);
 					Thread.sleep(1);

@@ -13,6 +13,8 @@ public class Item {
     private double startPrice;
     private final long creationTime;
     private final String sellerUID;
+    private String buyerID;
+    private float soldPrice;
     private boolean isActive;
     private TreeSet<Bid> bidList;
 
@@ -26,6 +28,8 @@ public class Item {
         this.itemID = UUID.randomUUID();
         this.sellerUID = sellerUID;
         this.isActive = isActive;
+        this.setBuyerID(null);
+        this.setSoldPrice(-1.0f);
         this.setBidList(new TreeSet<Bid>(new SimpleItemComparator()));
     }
 
@@ -79,6 +83,22 @@ public class Item {
 	
 	public long getCreationTime() {
 		return creationTime;
+	}
+	
+	public String getBuyerID() {
+		return buyerID;
+	}
+
+	public void setBuyerID(String buyerID) {
+		this.buyerID = buyerID;
+	}
+	
+	public float getSoldPrice() {
+		return soldPrice;
+	}
+
+	public void setSoldPrice(float soldPrice) {
+		this.soldPrice = soldPrice;
 	}
 	
 	public boolean equals(Object obj){

@@ -7,6 +7,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.biddingengine.datamodel.Bid;
 import org.biddingengine.datamodel.Item;
@@ -19,10 +20,12 @@ public class BidService {
 	private final ConcurrentHashMap<String, Item> itemMap;
 	private ExecutorService executorService;
 	private UserService userService;
+	private final AtomicLong totalBidCount;
 	
 	public BidService(ConcurrentHashMap<String, Item> itemMap, UserService userService){
 		this.itemMap = itemMap;
 		this.userService = userService;
+		totalBidCount = new AtomicLong();
 		executorService= Executors.newCachedThreadPool();
 	}
 	
@@ -33,6 +36,7 @@ public class BidService {
 		Item item = itemMap.get(itemID);
 	
 		if(item != null){
+			totalBidCount.getAndIncrement();
 			if(bidValue <= item.getStartPrice()){
 				throw new BidInvalidException(bidValue);
 			}
@@ -91,5 +95,9 @@ public class BidService {
 			throw new ItemNotFoundException();
 		}
 		return bid;
+	}
+	
+	public long getTotalBidCount() {
+		return totalBidCount.get();
 	}
 }
